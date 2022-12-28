@@ -9,15 +9,22 @@ class Game extends React.Component {
             history: [{
                 squares: Array(9).fill(null),
             }],
-            isXNext: true
+            isXNext: true,
+            stepNumber: 0
         }
     }
     render() {
         const history = this.state.history;
-        const current = history[history.length - 1];
+        const current = history[this.state.stepNumber];
         const winner = Winner(current.squares);
         const status = winner != null ? "The winner is " + winner : "Next player is " + (this.state.isXNext ? 'X' : 'O');
-
+        const moves = history.map((step, move) => {
+            const description = move ? 'Go to move ' + move : 'Go to game start';
+            return (
+                <li key={move}>
+                    <button onClick={() => this.jumpTo(move)}>{description}</button>
+                </li>);
+        })
         return (
             <div className="game">
                 <div className="game-board">
@@ -26,14 +33,21 @@ class Game extends React.Component {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <div>{/*TODO*/}</div>
+                    <div>{moves}</div>
                 </div>
             </div>
         );
     }
 
+    jumpTo(step) {
+        this.setState({
+            stepNumber: step,
+            isXNext: (step % 2) === 0
+        });
+    }
+
     handleClick(i) {
-        const history = this.state.history;
+        const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         let winner = Winner(current.squares);
         if (winner != null) {
@@ -44,7 +58,8 @@ class Game extends React.Component {
         squares[i] = this.state.isXNext ? 'X' : 'O';
         this.setState({
             history: history.concat([{ squares: squares }]),
-            isXNext: !this.state.isXNext
+            isXNext: !this.state.isXNext,
+            stepNumber: history.length
         });
     }
 }
